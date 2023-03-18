@@ -16,7 +16,7 @@ func Worker(ctx context.Context, r *rand.Rand, target string, results chan<- sec
 
 		key, ok := workerIteration(r, target)
 		if ok {
-			results <- *key
+			results <- key
 		}
 	}
 }
@@ -28,7 +28,7 @@ func Worker(ctx context.Context, r *rand.Rand, target string, results chan<- sec
 // It's isolated here as a means to easy holistic overall throughput
 // measuring (we benchmark individual components in generate.go for
 // performance tweaking).
-func workerIteration(r *rand.Rand, target string) (*secp256k1.PrivateKey, bool) {
+func workerIteration(r *rand.Rand, target string) (secp256k1.PrivateKey, bool) {
 	key, err := GenerateKeyInsecure(r)
 	if err != nil {
 		panic(err)
@@ -44,5 +44,5 @@ func workerIteration(r *rand.Rand, target string) (*secp256k1.PrivateKey, bool) 
 	if strings.HasPrefix(addr, target) {
 		return key, true
 	}
-	return nil, false
+	return key, false
 }
