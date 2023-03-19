@@ -2,24 +2,33 @@ package main
 
 import (
 	"context"
+	crand "crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"math/big"
 	"math/rand"
 	"runtime"
-	"time"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 )
 
 var (
-	// TODO use unpredictable seed start
-	seed    = flag.Int64("seed", time.Now().UnixNano(), "random seed")
+	seed    = flag.Int64("seed", seedStart(), "random seed")
 	workers = flag.Int("workers", runtime.NumCPU(), "number of workers")
 )
+
+// use the cryptographically secure RNG to initially seed the insecure RNGs
+func seedStart() int64 {
+	n, err := crand.Int(crand.Reader, big.NewInt(1<<63-1))
+	if err != nil {
+		panic(err)
+	}
+	return n.Int64()
+}
 
 func main() {
 	flag.Parse()
