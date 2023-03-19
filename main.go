@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/big"
 	"math/rand"
+	"os"
 	"runtime"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
@@ -32,7 +33,12 @@ func seedStart() int64 {
 
 func main() {
 	flag.Parse()
-	target := "abc"
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+	target := flag.Arg(0)
+	log.Printf("searching for %s with %d workers...", target, *workers)
 
 	ctx := context.TODO()
 	results := make(chan secp256k1.PrivateKey)
