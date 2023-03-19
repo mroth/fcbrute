@@ -13,6 +13,8 @@ type worker struct {
 	r       *rand.Rand
 	smasher *AddressSmasher
 	target  []byte
+
+	bufPubkeyData [65]byte
 }
 
 func Worker(ctx context.Context, r *rand.Rand, target string, results chan<- secp256k1.PrivateKey) {
@@ -48,10 +50,8 @@ func (w *worker) iterate() (secp256k1.PrivateKey, bool) {
 		panic(err)
 	}
 
-	pubkey := key.PubKey()
-	data := pubkey.SerializeUncompressed()
-
-	w.smasher.Write(data)
+	WritePubKeyBytes(&key, &w.bufPubkeyData)
+	w.smasher.Write(w.bufPubkeyData[:])
 	b := w.smasher.peekPayloadStringBytes()
 
 	if bytes.HasPrefix(b, w.target) {

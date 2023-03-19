@@ -64,3 +64,21 @@ func GenerateKeyInsecure(r *mathrand.Rand) (secp256k1.PrivateKey, error) {
 	// assuming this is just a memory enclave thing, can safely ignore.
 	return key, nil
 }
+
+// WritePubKeyBytes will generate the public key for p, and then write the
+// uncompressed 65-byte serialization directly to dst, with zero heap
+// allocations.
+func WritePubKeyBytes(p *secp256k1.PrivateKey, dst *[65]byte) {
+	// This is an adaptation from the following functions in dcrec:
+	//	func (p *PrivateKey) PubKey() *PublicKey
+	//	func (p PublicKey) SerializeUncompressed() []byte
+
+	var result secp256k1.JacobianPoint
+	secp256k1.ScalarBaseMultNonConst(&p.Key, &result)
+	result.ToAffine()
+
+	// 0x04 || 32-byte x coordinate || 32-byte y coordinate
+	dst[0] = secp256k1.PubKeyFormatUncompressed
+	result.X.PutBytesUnchecked(dst[1:33])
+	result.Y.PutBytesUnchecked(dst[33:65])
+}
