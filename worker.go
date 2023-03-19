@@ -1,20 +1,34 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"math/rand"
-	"strings"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 )
 
+type worker struct {
+	ctx     context.Context
+	r       *rand.Rand
+	smasher *AddressSmasher
+	target  []byte
+}
+
 func Worker(ctx context.Context, r *rand.Rand, target string, results chan<- secp256k1.PrivateKey) {
+	w := worker{
+		ctx:     ctx,
+		r:       r,
+		smasher: NewAddressSmasher(),
+		target:  []byte(target),
+	}
+
 	for {
-		if ctx.Err() != nil {
+		if w.ctx.Err() != nil {
 			return
 		}
 
-		key, ok := workerIteration(r, target)
+		key, ok := w.iterate()
 		if ok {
 			results <- key
 		}
@@ -28,20 +42,19 @@ func Worker(ctx context.Context, r *rand.Rand, target string, results chan<- sec
 // It's isolated here as a means to easy holistic overall throughput
 // measuring (we benchmark individual components in generate.go for
 // performance tweaking).
-func workerIteration(r *rand.Rand, target string) (secp256k1.PrivateKey, bool) {
-	key, err := GenerateKeyInsecure(r)
+func (w *worker) iterate() (secp256k1.PrivateKey, bool) {
+	key, err := GenerateKeyInsecure(w.r)
 	if err != nil {
 		panic(err)
 	}
 
 	pubkey := key.PubKey()
 	data := pubkey.SerializeUncompressed()
-	addr, err := NewAddress(data)
-	if err != nil {
-		panic(err)
-	}
 
-	if strings.HasPrefix(addr, target) {
+	w.smasher.Write(data)
+	b := w.smasher.peekPayloadStringBytes()
+
+	if bytes.HasPrefix(b, w.target) {
 		return key, true
 	}
 	return key, false

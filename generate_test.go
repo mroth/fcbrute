@@ -45,16 +45,3 @@ func BenchmarkPubkeySerialize(b *testing.B) {
 		pubkey.SerializeUncompressed()
 	}
 }
-
-func BenchmarkNewAddress(b *testing.B) {
-	key, err := GenerateKey()
-	if err != nil {
-		b.Fatal(err)
-	}
-	pubkey := key.PubKey()
-	pubkeydata := pubkey.SerializeUncompressed()
-
-	for i := 0; i < b.N; i++ {
-		_, _ = NewAddress(pubkeydata)
-	}
-}

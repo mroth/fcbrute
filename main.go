@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/filecoin-project/go-address"
 )
 
 var (
@@ -24,7 +23,7 @@ var (
 
 func main() {
 	flag.Parse()
-	target := "t1abc"
+	target := "abc"
 
 	ctx := context.TODO()
 	results := make(chan secp256k1.PrivateKey)
@@ -37,17 +36,15 @@ func main() {
 	key := <-results
 
 	pubkey := key.PubKey()
-	address.CurrentNetwork = address.Mainnet
-	addr, err := NewAddress(pubkey.SerializeUncompressed())
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	pubkeydata := pubkey.SerializeUncompressed()
+	smasher := NewAddressSmasher()
+	smasher.Write(pubkeydata)
+	addr := smasher.String()
 	log.Printf("Found: %s\n", addr)
 
 	keydata := key.Serialize()
-	fmt.Println("hex private key:", hex.EncodeToString(keydata))
-	fmt.Println("b64 private key:", base64.StdEncoding.EncodeToString(keydata))
+	fmt.Println("private key (hex):", hex.EncodeToString(keydata))
+	fmt.Println("private key (b64):", base64.StdEncoding.EncodeToString(keydata))
 
 	info := KeyInfo{
 		Type:       KTSecp256k1,

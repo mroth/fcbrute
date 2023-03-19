@@ -5,7 +5,6 @@ import (
 	mathrand "math/rand"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/filecoin-project/go-address"
 )
 
 // PUBKEY GENERATION
@@ -64,11 +63,4 @@ func GenerateKeyInsecure(r *mathrand.Rand) (secp256k1.PrivateKey, error) {
 	// TODO: dcrec does zeroArray32(&b32) -- figure out why needs to be zeroed.
 	// assuming this is just a memory enclave thing, can safely ignore.
 	return key, nil
-}
-
-// NewAddress generates and returns the string Filecoin protocol 1 address for
-// given public key.
-func NewAddress(pubkey []byte) (string, error) {
-	addr, err := address.NewSecp256k1Address(pubkey)
-	return addr.String(), err
 }
