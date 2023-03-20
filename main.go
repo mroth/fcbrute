@@ -5,7 +5,6 @@ import (
 	crand "crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -60,17 +59,10 @@ func main() {
 	keydata := key.Serialize()
 	fmt.Println("private key (hex):", hex.EncodeToString(keydata))
 	fmt.Println("private key (b64):", base64.StdEncoding.EncodeToString(keydata))
-
-	info := KeyInfo{
-		Type:       KTSecp256k1,
-		PrivateKey: keydata,
-	}
-	exportKey, err := json.Marshal(info)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("hex-lotus: %s\n", exportKey)
 }
+
+/*
+For future use in importing into Lotus.  Need to figure out proper format.
 
 // https://github.com/filecoin-project/lotus/blob/4fd81e0c58ba075c1410abf29469bc0ba1081124/chain/types/keystore.go
 
@@ -90,3 +82,4 @@ type KeyInfo struct {
 	PrivateKey []byte  `json:"privateKey"`
 	Type       KeyType `json:"type"`
 }
+*/
