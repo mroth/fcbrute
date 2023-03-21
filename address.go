@@ -70,7 +70,7 @@ type AddressSmasher struct {
 		This means we can calculate each independently to the same underlying
 		buffer array at appropriate offsets depending on which we need.
 	*/
-	bufString []byte
+	bufString [bufStringLen]byte
 }
 
 const (
@@ -79,6 +79,8 @@ const (
 	payloadLenEncoded  = 32 // base32raw(20 bytes) = 32 bytes
 	checksumLen        = 4  // hash32, 32 bits     = 4 bytes
 	checksumLenEncoded = 7  // base32raw(4 bytes)  = 7 bytes
+
+	bufStringLen = prefixLen + payloadLenEncoded + checksumLenEncoded
 )
 
 func NewAddressSmasher() *AddressSmasher {
@@ -102,7 +104,6 @@ func NewAddressSmasher() *AddressSmasher {
 		low32:          base32.NewEncoding(encodeStd).WithPadding(base32.NoPadding),
 		bufAddrHash:    make([]byte, 0, payloadLen),
 		bufChecksum:    make([]byte, 0, checksumLen),
-		bufString:      make([]byte, prefixLen+payloadLenEncoded+checksumLenEncoded),
 	}
 }
 
@@ -120,7 +121,7 @@ func (a *AddressSmasher) String() string {
 	a.calcStrRep_Prefix()
 	a.calcStrRep_Payload()
 	a.calcStrRep_Checksum()
-	return string(a.bufString)
+	return string(a.bufString[:])
 }
 
 // calculate and peek at the bytes of the payload portion of the address string
