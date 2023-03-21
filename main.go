@@ -1,3 +1,6 @@
+// `fcbrute` will discover ⨎ Filecoin Protocol 1 (secp256k1) keypairs that result
+// in a public address string with a given prefix. This allows the creation of
+// "vanity" burner wallets.
 package main
 
 import (
